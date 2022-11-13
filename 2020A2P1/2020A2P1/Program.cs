@@ -137,7 +137,7 @@ namespace OpenHashTable
             int i;
 
             for (i = 0; i < numBuckets; i++)
-                HT[i] = null;
+                HT[i] = new Node(default, default, null);
             numItems = 0;
         }
 
@@ -189,15 +189,12 @@ namespace OpenHashTable
             // Rehash items from the old to new hash table
             for (i = 0; i < temp; i++)
             {
-                if (tempHT[i] != null)
+                Node p = tempHT[i].next;
+                while (p != null)
                 {
-                    Node p = tempHT[i].next;
-                    while (p != null)
-                    {
-                        Insert(p.key, p.value);
-                        p = p.next;
-                    }
-                }
+                    Insert(p.key, p.value);
+                    p = p.next;
+                }   
             }
         }
 
@@ -209,32 +206,20 @@ namespace OpenHashTable
         {
             //get hash code from key
             int i = key.GetHashCode() % numBuckets;     
-            Node curr;
-            //check if bucket is empty
-            if (HT[i] !=null)
+            Node curr = HT[i].next;
+            //check for duplicate keys
+            while (curr != null)
             {
-                //if bucket isnt empty check for duplicate keys
-                curr = HT[i].next;
-                while (curr != null)
-                {
-                    // Unsuccessful insert (key found already)
-                    if (curr.key.Equals(key))
-                        throw new InvalidOperationException("Duplicate key");
-                    else
-                        curr = curr.next;
-                }
-            }
-            else
-            {
-                //if bucket is empty add header node to it
-                HT[i] = new Node(default, default, null);
-            }           
+                // Unsuccessful insert (key found already)
+                if (curr.key.Equals(key))
+                    throw new InvalidOperationException("Duplicate key");
+                else
+                    curr = curr.next;
+            }       
             //curr node gets set to header node .next
             curr = HT[i].next;
-
             //inserted set to false 
             bool inserted = false;
-
             //prev node gets set to header node
             Node prev = HT[i];
             while (!inserted)
@@ -261,7 +246,6 @@ namespace OpenHashTable
                     }
                 }
             }
-
             numItems++;
             // Rehash if the average size of the buckets exceeds 5.0
             if ((double)numItems / numBuckets > 5.0)
@@ -275,13 +259,12 @@ namespace OpenHashTable
         public bool Remove(TKey key)
         {
             int i = key.GetHashCode() % numBuckets;
-            if(HT[i] != null)
-            {
-                Node p = HT[i].next;
-                if (p == null)
-                    return false;
-                else
-                // Successful remove of the first item in a bucket
+
+            Node p = HT[i].next;
+            if (p == null)
+                return false;
+            else
+            // Successful remove of the first item in a bucket
                 if (p.key.Equals(key))
                 {
                     HT[i] = HT[i].next;
@@ -300,8 +283,7 @@ namespace OpenHashTable
                         }
                         else
                             p = p.next;
-                    }
-            }
+                    }  
 
             // Unsuccessful remove (key not found)
             return false;
@@ -314,18 +296,16 @@ namespace OpenHashTable
         public TValue Retrieve(TKey key)
         {
             int i = key.GetHashCode() % numBuckets;
-            if(HT[i] != null)
+            Node p = HT[i].next;
+            while (p != null)
             {
-                Node p = HT[i].next;
-                while (p != null)
-                {
-                    // Successful retrieval (value found and returned)
-                    if (p.key.Equals(key))
-                        return p.value;
-                    else
-                        p = p.next;
-                }
-            }           
+                // Successful retrieval (value found and returned)
+                if (p.key.Equals(key))
+                    return p.value;
+                else
+                    p = p.next;
+            }
+                      
             throw new InvalidOperationException("Key not found");
         }
 
@@ -339,18 +319,13 @@ namespace OpenHashTable
             for (i = 0; i < numBuckets; i++)
             {
                 Console.Write(i.ToString().PadLeft(2) + ": ");
-                if (HT[i] != null)
+                p = HT[i].next;
+                while (p != null)
                 {
-                    p = HT[i].next;
-                    while (p != null)
-                    {
-                        Console.Write("<" + p.key.ToString() + "," + p.value.ToString() + "> ");
-                        p = p.next;
-                    }
-                    Console.WriteLine();
+                    Console.Write("<" + p.key.ToString() + "," + p.value.ToString() + "> ");
+                    p = p.next;
                 }
                 Console.WriteLine();
-
             }
         }
 
@@ -369,18 +344,14 @@ namespace OpenHashTable
             //getting all nodes in buckets that are not null and storing them in nodes array
             for (int i = 0; i < numBuckets; i++)
             {
-                if (HT[i] != null)
+                p = HT[i].next;
+                while (p != null)
                 {
-                    p = HT[i].next;
-                    while (p != null)
-                    {
-                        nodes[count] = p;
-                        count++;
-                        p = p.next;
-                    }
+                    nodes[count] = p;
+                    count++;
+                    p = p.next;
                 }
             }
-
             //subtract 1 from count for index
             count = count - 1;
 
